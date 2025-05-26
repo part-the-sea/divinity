@@ -341,7 +341,7 @@ func (s *UserService) Delete(ctx context.Context, id string) error {
 
 	if err != nil {
 		slog.Error("failed to get user", "error", err)
-		return errors.New("failed to get user")
+		return errors.New("an internal error occurred")
 	}
 
 	if user == nil {
@@ -352,7 +352,7 @@ func (s *UserService) Delete(ctx context.Context, id string) error {
 
 	if err != nil {
 		slog.Error("failed to delete user", "error", err)
-		return errors.New("failed to delete user")
+		return errors.New("an internal error occurred")
 	}
 
 	return nil

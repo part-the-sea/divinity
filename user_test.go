@@ -571,3 +571,57 @@ func TestUserService_UpdateEmail_ReturnsNoErrorForValidRequest(t *testing.T) {
 
 	assert.NoError(t, err)
 }
+
+func TestUserService_Delete_ReturnsErrorForFailingToGetUser(t *testing.T) {
+	userService := NewUserService(&MockUserStore{
+		GetByIDFunc: func(ctx context.Context, id string) (*User, error) {
+			return nil, errors.New("random error")
+		},
+	})
+
+	err := userService.Delete(context.Background(), "1")
+
+	assert.Error(t, err)
+	assert.Equal(t, "an internal error occurred", err.Error())
+}
+
+func TestUserService_Delete_ReturnsErrorForUserNotFound(t *testing.T) {
+	userService := NewUserService(&MockUserStore{
+		GetByIDFunc: func(ctx context.Context, id string) (*User, error) {
+			return nil, nil
+		},
+	})
+
+	err := userService.Delete(context.Background(), "1")
+
+	assert.Error(t, err)
+	assert.Equal(t, "user not found", err.Error())
+}
+
+func TestUserService_Delete_ReturnsErrorForFailingToDeleteUser(t *testing.T) {
+	userService := NewUserService(&MockUserStore{
+		GetByIDFunc: func(ctx context.Context, id string) (*User, error) {
+			return &User{ID: "1", FirstName: "John", LastName: "Doe", Email: "john.doe@example.com"}, nil
+		},
+		DeleteFunc: func(ctx context.Context, id string) error {
+			return errors.New("random error")
+		},
+	})
+
+	err := userService.Delete(context.Background(), "1")
+
+	assert.Error(t, err)
+	assert.Equal(t, "an internal error occurred", err.Error())
+}
+
+func TestUserService_Delete_ReturnsNoErrorForValidRequest(t *testing.T) {
+	userService := NewUserService(&MockUserStore{
+		GetByIDFunc: func(ctx context.Context, id string) (*User, error) {
+			return &User{ID: "1", FirstName: "John", LastName: "Doe", Email: "john.doe@example.com"}, nil
+		},
+	})
+
+	err := userService.Delete(context.Background(), "1")
+
+	assert.NoError(t, err)
+}
